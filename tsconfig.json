@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "lib": ["es2019"],
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["amvse.ts"]
+}

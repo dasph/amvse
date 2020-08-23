@@ -1,0 +1,89 @@
+:root {
+  --color-primary: black;
+  --color-gray: #aaa;
+  --color-background:#f5f5f5;
+  --color-error: #dc3545;
+  --color-purple: #7100f3;
+  --font-size: 1.6rem;
+  --font-family: "Quicksand", "Segoe UI",  "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  height: 100vh;
+  font-size: 62.5%;
+}
+
+body, .app {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  min-height: 100%;
+  color: var(--color-primary);
+  background-color: var(--color-background);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  font-weight: 300;
+}
+
+a, a:link, a:visited, a:hover, a:active {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -40px -40px;
+  width: 80px;
+  height: 80px;
+}
+
+.loader div {
+  position: absolute;
+  top: 33px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: black;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.loader div:nth-child(1) {
+  left: 8px;
+  animation: loader-ell1 0.6s infinite;
+}
+
+.loader div:nth-child(2) {
+  left: 8px;
+  animation: loader-ell2 0.6s infinite;
+}
+
+.loader div:nth-child(3) {
+  left: 32px;
+  animation: loader-ell2 0.6s infinite;
+}
+
+.loader div:nth-child(4) {
+  left: 56px;
+  animation: loader-ell3 0.6s infinite;
+}
+
+@keyframes loader-ell1 {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+@keyframes loader-ell2 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(24px, 0); }
+}
+
+@keyframes loader-ell3 {
+  0% { transform: scale(1); }
+  100% { transform: scale(0); }
+}

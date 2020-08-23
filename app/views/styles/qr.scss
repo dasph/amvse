@@ -1,0 +1,14 @@
+.qr {
+  display: flex;
+  flex-grow: 1;
+  margin: 10px;
+
+  img {
+    flex: 1;
+    contain: size;
+  }
+
+  + .home {
+    display: none;
+  }
+}

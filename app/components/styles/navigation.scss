@@ -1,0 +1,34 @@
+nav {
+  ul {
+    display: flex;
+    font-size: 2.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      display: inline-block;
+      margin: 0px 10px;
+
+      &:last-of-type {
+        margin-left: auto;
+      }
+
+      a {
+        display: block;
+        padding: 15px;
+        border-bottom: 1px solid #ccc;
+        transition: .25s;
+        cursor: pointer;
+
+        &.active {
+          border-bottom: 1px solid black;
+        }
+
+        &:hover {
+          border-bottom: 1px solid black;
+        }
+      }
+    }
+  }
+}

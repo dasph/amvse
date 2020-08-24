@@ -1,6 +1,6 @@
 import { Model, BuildOptions, BelongsToManyCreateAssociationMixin, BelongsToManyAddAssociationMixin, BelongsToManyGetAssociationsMixin, BelongsToManyRemoveAssociationMixin } from 'sequelize'
 
-export type TModel<T> = typeof Model & { new (values?: object, options?: BuildOptions): T }
+export type TModel<T> = typeof Model & { new (values?: Record<string, unknown>, options?: BuildOptions): T }
 
 export type TSession = Model & {
   readonly id: number;
@@ -10,9 +10,9 @@ export type TSession = Model & {
   readonly createdAt: Date;
 
   createVideo: BelongsToManyCreateAssociationMixin<TVideo>;
-  addVideo: BelongsToManyAddAssociationMixin<TVideo, {}>;
+  addVideo: BelongsToManyAddAssociationMixin<TVideo, Record<string, unknown>>;
   getVideos: BelongsToManyGetAssociationsMixin<TVideo>;
-  removeVideo: BelongsToManyRemoveAssociationMixin<TVideo, {}>;
+  removeVideo: BelongsToManyRemoveAssociationMixin<TVideo, Record<string, unknown>>;
 }
 
 export type TVideo = Model & {

@@ -15,7 +15,7 @@ const Player = lazy(() => import('../components/Player'))
 
 const ws = new WebSocketClient()
 
-export default () => {
+export default function Home () {
   const [state, setState] = useState<TSessionState>()
 
   useEffect(() => void ws.open().then(() => request('getState').then(setState)), [])

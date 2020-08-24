@@ -6,7 +6,7 @@ import { createHmac, Hmac } from 'crypto'
 import { AllHtmlEntities } from 'html-entities'
 import { fetch } from './fetch'
 import { Session, Video, Queue } from './models'
-import { IMiddleware, TKoaError, TCredentials, TAuthorizedMiddleware, YoutubeSearchResult, YoutubeVideoResult, TInvite } from '../typings/web'
+import { IMiddleware, TCredentials, TAuthorizedMiddleware, YoutubeSearchResult, YoutubeVideoResult, TInvite } from '../typings/web'
 import { TQueue } from '../typings/models'
 
 
@@ -44,7 +44,7 @@ export const webSocketHandler: IMiddleware = async (ctx) => {
   ctx.respond = false
 }
 
-const wsEmit = (sess: string, event: string, payload: any) => {
+const wsEmit = <T>(sess: string, event: string, payload: T) => {
   wss.clients.forEach((ws) => wsCreds.get(ws)?.session === sess && ws.send(JSON.stringify({ event, payload })))
 }
 
@@ -125,7 +125,7 @@ export const onGetState: TAuthorizedMiddleware = async (ctx) => {
 
 export const onAddQueue: TAuthorizedMiddleware = async (ctx) => {
   const { session } = ctx.state
-  const vid = ctx.query.id
+  const vid = ctx.query.id as string
 
   if (!vid) throw new ApiError(400, 'Bad id value')
 

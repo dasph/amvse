@@ -29,7 +29,7 @@ export async function request <T>(method: string, init: RequestInit = {}) {
 
 export class WebSocketClient {
   private ws: WebSocket;
-  private events: { [key: string]: (data: any) => void };
+  private events: { [key: string]: (data) => void };
 
   constructor (protocols?: string | string[]) {
     const secure = protocol === 'https:'
@@ -46,7 +46,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve) => this.ws.onopen = () => resolve())
   }
 
-  on (type: string, cb: (payload: any) => void) {
+  on <T>(type: string, cb: (payload: T) => void) {
     this.events[type] = cb
     return this
   }

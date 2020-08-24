@@ -4,7 +4,7 @@ export { RouterContext } from 'koa-router'
 
 export { IMiddleware }
 
-export type TAuthorizedMiddleware = IMiddleware<TCredentials & { data: any }>
+export type TAuthorizedMiddleware = IMiddleware<TCredentials & { data: unknown }>
 
 export type TCredentials = {
   session: string;
@@ -15,13 +15,6 @@ export type TCredentials = {
 export type TInvite = {
   session: string;
   signed: number;
-}
-
-export type TKoaError = {
-  errno: number;
-  code: string;
-  syscall: string;
-  headerSent: boolean;
 }
 
 type YoutubeSearchItem = {

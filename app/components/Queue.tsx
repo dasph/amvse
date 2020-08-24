@@ -36,8 +36,7 @@ export const Queue = (props: Props) => {
     setQueue(q)
   }
 
-  const moveQueue = (data: any) => {
-    const { id, pos } = data
+  const moveQueue = ({ id, pos }: { id: number, pos: number }) => {
     const old = queue.find((q) => id === q.id)?.position
 
     if (!old) return
@@ -68,7 +67,7 @@ export const Queue = (props: Props) => {
     setQuery(e.target.value)
 
     const { value: query } = input.current
-    const check = async (data: any) => input.current.value === query ? data : Promise.reject()
+    const check = async (data: TSessionQueue[]) => input.current.value === query ? data : Promise.reject()
 
     if (query.length < 2) {
       setSearch(null)
@@ -82,7 +81,7 @@ export const Queue = (props: Props) => {
       .then((search) => {
         setSearch(search)
         scrollTo()
-      }).catch(() => {})
+      }).catch(() => void 0)
   }
 
   props.ws
@@ -104,7 +103,7 @@ export const Queue = (props: Props) => {
             lockVertically={true}
             container={container}
             onChange={({ oldIndex, newIndex }) => {
-              request(`queue?id=${queue[oldIndex].id}&pos=${newIndex + 1}`, { method: 'PATCH' })
+              request(`queue?id=${queue[oldIndex].id}&pos=${queue[newIndex].position}`, { method: 'PATCH' })
             }}
             renderList={({ children, props }) => <div className='queue-list-list' {...props}>{children}</div>}
             renderItem={({ value: { id, videoId, title, channel, duration }, props }) => (

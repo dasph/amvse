@@ -33,7 +33,6 @@ export const bodyParserError = () => {
 export const webSocketHandler: IMiddleware = async (ctx) => {
   if (ctx.request.header.upgrade !== 'websocket') return ctx.status = 400
 
-
   const [creds, ws] = await Promise.all([
     verify<TCredentials>(decodeURIComponent(ctx.params.token)),
     new Promise<WebSocket>((resolve) => wss.handleUpgrade(ctx.req, ctx.request.socket, Buffer.alloc(0), resolve))
@@ -241,7 +240,6 @@ export const onNext: TAuthorizedMiddleware = async (ctx) => {
 
   const queue = await Queue.findOne({ where: { id: sess.queueId , sessionId: sess.id } })
   const next = await Queue.findOne({ where: { sessionId: sess.id, position: { [Op.gt]: queue?.position } }, order: ['position'] })
-  console.log(next)
 
   sess.update({ queueId: next?.id })
   wsEmit(session, 'next', next?.id)

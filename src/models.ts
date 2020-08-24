@@ -64,11 +64,10 @@ export const Queue = sequelize.define('queue', {
   addedBy: new DataTypes.STRING(32)
 }, { updatedAt: false }) as TModel<TQueue>
 
-
 Session.belongsToMany(Video, { through: 'queue' })
 Video.belongsToMany(Session, { through: 'queue' })
 
-Session.afterDestroy(({ id }) => void Queue.destroy(({ where: { sessionId: id } })))
+Session.afterDestroy(({ id }) => { Queue.destroy(({ where: { sessionId: id } })) })
 
 Queue.beforeBulkCreate(async ([queue]) => {
   const [, [{ sequence }]] = await Session.update({ sequence: Sequelize.literal('sequence + 1') }, { where: { id: queue.sessionId }, returning: true })

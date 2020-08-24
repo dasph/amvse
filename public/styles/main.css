@@ -5,7 +5,7 @@
   --color-error: #dc3545;
   --color-purple: #7100f3;
   --font-size: 1.6rem;
-  --font-family: "Quicksand", "Segoe UI",  "Helvetica Neue", Arial, sans-serif;
+  --font-family: 'Quicksand', 'Segoe UI',  'Helvetica Neue', Arial, sans-serif;
 }
 
 html {

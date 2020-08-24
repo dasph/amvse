@@ -9,7 +9,7 @@ export const App = () => {
   const [session, setSession] = useState<string>()
 
   useEffect(() => void (async () => {
-    await inviteHandler().catch(() => {})
+    await inviteHandler().catch(() => void 0)
     request<string>('getSession').then(setSession).catch(() => setSession(null))
   })(), [])
 

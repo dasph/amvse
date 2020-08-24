@@ -9,7 +9,8 @@
     "tsc": "tsc",
     "wp": "webpack",
     "tsc:w": "tsc -w",
-    "wp:w": "webpack -w"
+    "wp:w": "webpack -w",
+    "proxy": "node dist/proxy.js"
   },
   "repository": {
     "type": "git",

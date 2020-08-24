@@ -18,7 +18,7 @@ export async function request <T>(method: string, init: RequestInit = {}) {
     ...rest
   }
 
-  const res = await fetch(`${protocol}//${hostname}/api/${method}`, opts)
+  const res = await fetch(`${protocol}//api.${hostname}/${method}`, opts)
   if (!res.ok) throw new ApiError(res.status, await res.text())
 
   const { code, error, data } = await res.json()
@@ -35,7 +35,7 @@ export class WebSocketClient {
     const secure = protocol === 'https:'
     const creds = encodeURIComponent(localStorage.getItem('credentials'))
 
-    this.ws = new WebSocket(`ws${secure ? 's' : ''}://${hostname}/ws/${creds}`, protocols)
+    this.ws = new WebSocket(`ws${secure ? 's' : ''}://ws.${hostname}/${creds}`, protocols)
     this.events = {}
 
     this.ws.onmessage = this.handleMessage.bind(this)

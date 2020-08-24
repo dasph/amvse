@@ -30,13 +30,6 @@ export const bodyParserError = () => {
   throw new ApiError(400, 'Bad Request')
 }
 
-export const koaErrorHandler = (err: TKoaError) => {
-  const blacklist = ['ECONNRESET']
-  if (blacklist.indexOf(err.code) !== -1) return
-
-  console.error('Koa app-level error:', err)
-}
-
 export const webSocketHandler: IMiddleware = async (ctx) => {
   if (ctx.request.header.upgrade !== 'websocket') return ctx.status = 400
 

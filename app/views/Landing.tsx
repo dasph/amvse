@@ -1,5 +1,5 @@
 import React from 'react'
-import { request } from '../utils'
+import { request, setCreds } from '../utils'
 
 import './styles/landing.scss'
 
@@ -11,8 +11,7 @@ export default function Landing ({ setSession }: Props) {
   const start = async () => {
     setSession(void 0)
 
-    const creds = await request<string>('start', { method: 'post' })
-    localStorage.setItem('credentials', creds)
+    await request<string>('start', { method: 'post' }).then(setCreds)
 
     request('getSession').then(setSession)
   }

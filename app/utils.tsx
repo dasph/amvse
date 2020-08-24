@@ -59,11 +59,14 @@ export class WebSocketClient {
   }
 }
 
+export const setCreds = (creds: string) => {
+  localStorage.setItem('credentials', creds)
+}
+
 export const inviteHandler = async () => {
   const token = location.hash.slice(1)
   if (!token) return
 
   history.replaceState(null, null, ' ')
-  const creds = await request<string>(`join?invite=${token}`)
-  localStorage.setItem('credentials', creds)
+  await request<string>(`join?invite=${token}`).then(setCreds)
 }

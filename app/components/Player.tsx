@@ -22,7 +22,7 @@ export default function Player (props: Props) {
     .on('setVideoId', setVideoId)
 
   return (
-    <div className='player'>
+    <div className='player' style={{ ...!videoId && { pointerEvents: 'none' } }} >
       <span>PLAYER</span>
       <YouTube videoId={videoId || defaultVideo} containerClassName='youtube-player'
         onReady={({ target }) => setPlayer(target)}

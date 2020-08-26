@@ -29,7 +29,7 @@ export async function request <T>(method: string, init: RequestInit = {}) {
 
 export class WebSocketClient {
   private ws: WebSocket;
-  private events: { [key: string]: (data) => void };
+  private events: { [key: string]: ((data) => void)[] };
 
   constructor (protocols?: string | string[]) {
     const secure = protocol === 'https:'
@@ -47,14 +47,14 @@ export class WebSocketClient {
   }
 
   on <T>(type: string, cb: (payload: T) => void) {
-    this.events[type] = cb
+    this.events[type] = this.events[type] ? [...this.events[type], cb] : [cb]
     return this
   }
 
   handleMessage ({ data }) {
     const { event, payload } = JSON.parse(data)
 
-    if (this.events[event]) return this.events[event](payload)
+    if (this.events[event]) return this.events[event].forEach((f) => f(payload))
     throw new Error(`event of type '${event}' is not mounted`)
   }
 }

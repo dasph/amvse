@@ -7,6 +7,7 @@ export type TSession = Model & {
   readonly uuid: string;
   queueId: number | null;
   sequence: number;
+  isPlaying: boolean;
   readonly createdAt: Date;
 
   createVideo: BelongsToManyCreateAssociationMixin<TVideo>;

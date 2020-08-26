@@ -21,6 +21,10 @@ export const Session = sequelize.define('session', {
   sequence: {
     type: new DataTypes.INTEGER(),
     defaultValue: 0
+  },
+  isPlaying: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, { updatedAt: false }) as TModel<TSession>
 

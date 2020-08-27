@@ -1,7 +1,7 @@
 import send from 'koa-send'
 import Router from 'koa-router'
 
-import { webSocketHandler, errorHandler, responseHandler, onStart, onJoin, authorize, onGetSession, onGetState, onSearch, onDelQueue, onMoveQueue, onAddQueue, onQr, onNext, onPlayId, onPrev, onPlay, onToggle } from './service'
+import { webSocketHandler, errorHandler, responseHandler, onStart, onJoin, authorize, onQr, onGetSession, onSearch, onGetQueue, onAddQueue, onDelQueue, onMoveQueue, onPlay, onToggle } from './service'
 
 export const front = new Router()
   .get(['/qr'], (ctx) => send(ctx, 'public/index.html'))
@@ -16,18 +16,16 @@ export const api = new Router()
   .get('/join', onJoin)
 
   .use(authorize)
+
+  .get('/qr', onQr)
   .get('/getSession', onGetSession)
-  .get('/getState', onGetState)
 
   .get('/search', onSearch)
+
+  .get('/queue', onGetQueue)
   .put('/queue', onAddQueue)
   .del('/queue', onDelQueue)
   .patch('/queue', onMoveQueue)
 
-  .get('/play', onPlay)
+  .patch('/play', onPlay)
   .get('/toggle', onToggle)
-  .patch('/play', onPlayId)
-  .get('/prev', onPrev)
-  .get('/next', onNext)
-
-  .get('/qr', onQr)

@@ -16,7 +16,7 @@ export const App = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      {session === void 0 ? <Loader /> : session === null ? <Landing setSession={setSession} /> : <Home rank={session.rank} />}
+      {session === void 0 ? <Loader /> : session === null ? <Landing setSession={setSession} /> : <Home {...session} />}
     </Suspense>
   )
 }

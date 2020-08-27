@@ -1,9 +1,10 @@
 export type TSession = {
   rank: number;
-  session: string;
+  queueId: number | null;
+  isPlaying: boolean;
 }
 
-export type TSessionQueue = {
+export type TQueue = {
   id: number;
   position: number;
   videoId: string;
@@ -13,10 +14,4 @@ export type TSessionQueue = {
   addedBy: string;
   uploaded: string;
   createdAt: string;
-}
-
-export type TSessionState = {
-  queueId: number | null;
-  queue: TSessionQueue[];
-  isPlaying: boolean;
 }

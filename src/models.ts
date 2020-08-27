@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, UUIDV4 } from 'sequelize'
+import { Sequelize, DataTypes } from 'sequelize'
 import { TModel, TSession, TQueue, TVideo } from '../typings/models'
 
 const { POSTGRESQL } = process.env
@@ -9,13 +9,9 @@ sequelize.authenticate().then(() => console.log('Ξ Database connected'))
 
 export const Session = sequelize.define('session', {
   id: {
-    type: new DataTypes.INTEGER(),
+    type: new DataTypes.BIGINT(),
     primaryKey: true,
     autoIncrement: true
-  },
-  uuid: {
-    type: DataTypes.UUID,
-    defaultValue: UUIDV4
   },
   queueId: new DataTypes.INTEGER(),
   sequence: {
@@ -53,7 +49,7 @@ export const Video = sequelize.define('video', {
 
 export const Queue = sequelize.define('queue', {
   sessionId: {
-    type: new DataTypes.INTEGER(),
+    type: new DataTypes.BIGINT(),
     primaryKey: true
   },
   id: {
@@ -71,6 +67,8 @@ export const Queue = sequelize.define('queue', {
 Session.belongsToMany(Video, { through: 'queue' })
 Video.belongsToMany(Session, { through: 'queue' })
 
+Queue.belongsTo(Video)
+
 Session.afterDestroy(({ id }) => { Queue.destroy(({ where: { sessionId: id } })) })
 
 Queue.beforeBulkCreate(async ([queue]) => {
@@ -81,4 +79,3 @@ Queue.beforeBulkCreate(async ([queue]) => {
 // Session.sync({ force: true })
 // Video.sync({ force: true })
 // Queue.sync({ force: true })
-

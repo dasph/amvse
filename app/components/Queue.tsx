@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { List } from 'react-movable'
 import { request } from '../utils'
-import { TSessionQueue } from '../typings'
+import { TQueue } from '../typings'
 
 import './styles/queue.scss'
 
 type Props = {
-  queue: TSessionQueue[];
+  queue: TQueue[];
   queueId: number;
 }
 
@@ -14,7 +14,7 @@ const wait = (n: number) => new Promise((resolve) => setTimeout(resolve, n))
 const formatTime = (t: number) => [~~(t / 60), t % 60].map((n) => `${n}`.padStart(2, '0')).join(':')
 
 export const Queue = ({ queue, queueId }: Props) => {
-  const [search, setSearch] = useState<TSessionQueue[]>(null)
+  const [search, setSearch] = useState<TQueue[]>(null)
   const [container, setContainer] = useState<Element>(null)
   const [fetching, setFetching] = useState<boolean>(false)
   const [query, setQuery] = useState<string>('')
@@ -39,7 +39,7 @@ export const Queue = ({ queue, queueId }: Props) => {
     setQuery(e.target.value)
 
     const { value: query } = input.current
-    const check = async (data: TSessionQueue[]) => input.current.value === query ? data : Promise.reject()
+    const check = async (data: TQueue[]) => input.current.value === query ? data : Promise.reject()
 
     if (query.length < 2) {
       setSearch(null)
@@ -73,7 +73,7 @@ export const Queue = ({ queue, queueId }: Props) => {
             }}
             renderList={({ children, props }) => <div className='queue-list-list' {...props}>{children}</div>}
             renderItem={({ value: { id, videoId, title, channel, duration }, props }) => (
-              <div className={`queue-song`} {...props} key={id}>
+              <div className={'queue-song'} {...props} key={id}>
                 {id === queueId && <div className='queue-playing' /> }
                 <img src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
                   loading='lazy' width='100px' height='56px'
@@ -92,7 +92,7 @@ export const Queue = ({ queue, queueId }: Props) => {
           /> :
           <div className='queue-list-list'> {
             search.map(({ id, title, channel, duration }) =>
-              <div className={`queue-song`} key={id} onClick={() => request(`queue?id=${id}`, { method: 'PUT' })}>
+              <div className={'queue-song'} key={id} onClick={() => request(`queue?id=${id}`, { method: 'PUT' })}>
                 <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} loading='lazy' width='100px' height='56px' />
                 <div className='queue-song-info'>
                   <span>{title}</span>
@@ -121,39 +121,19 @@ export const Queue = ({ queue, queueId }: Props) => {
   )
 }
 
+// onScroll ({ target }) {
+//   const { scrollTop: x, scrollHeight: a, offsetHeight: b } = target
 
+//   if (this.state.search && (x / a + b / a > 0.8) && !this.state.fetching) {
+//     const { value: query } = this.input.current
+//     const { length: offset } = this.state.search
 
+//     if (offset > 75) return
 
-  // onScroll ({ target }) {
-  //   const { scrollTop: x, scrollHeight: a, offsetHeight: b } = target
+//     this.search(query, offset).then((res: any) => {
+//       const search = res.filter((a) => !this.state.search.find((o) => o.id === a.id))
 
-  //   if (this.state.search && (x / a + b / a > 0.8) && !this.state.fetching) {
-  //     const { value: query } = this.input.current
-  //     const { length: offset } = this.state.search
-
-  //     if (offset > 75) return
-
-  //     this.search(query, offset).then((res: any) => {
-  //       const search = res.filter((a) => !this.state.search.find((o) => o.id === a.id))
-
-  //       this.setState({ search: [...this.state.search, ...search] })
-  //     })
-  //   }
-  // }
-
-  // addToQueue (ids) {
-  //   return new Promise((resolve) => request('info', {
-  //     body: JSON.stringify(ids.map(({ id }) => id))
-  //   }).then((data) => {
-  //     const q = ids.map((s) => ({ ...s, ...data[s.id] }))
-  //     this.setState({ queue: [...this.state.queue, ...q] }, resolve)
-  //   }))
-  // }
-
-  // onAddToQueue (id) {
-  //   const search = this.state.search.filter((e) => id !== e.id)
-
-  //   this.setState({ search })
-
-  //   // return this.props.ws.sendUpdate('addToQueue', id)
-  // }
+//       this.setState({ search: [...this.state.search, ...search] })
+//     })
+//   }
+// }

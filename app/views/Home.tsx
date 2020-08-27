@@ -1,37 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
-import { request, WebSocketClient } from '../utils'
+import { request, createRef, WebSocketClient } from '../utils'
 import { Qr } from './Qr'
-import { Logout } from '../components/Logout'
-import { Loader } from '../components/Loader'
-import { Player } from '../components/Player'
 import { Queue } from '../components/Queue'
+import { Loader } from '../components/Loader'
+import { Logout } from '../components/Logout'
+import { Player } from '../components/Player'
 import { Navigation } from '../components/Navigation'
 
-import { TSessionState, TSessionQueue } from '../typings'
+import { TSession, TQueue } from '../typings'
 
 import './styles/home.scss'
 
-type Props = {
-  rank: number;
-}
-
-const createRef = <T extends unknown>(obj: T) => {
-  const ref = useRef(obj)
-  ref.current = obj
-  return ref
-}
-
 const ws = new WebSocketClient()
 
-export default function Home (props: Props) {
-  const [queue, setQueue] = useState<TSessionQueue[]>()
-  const [queueId, setQueueId] = useState<number>()
-  const [isPlaying, setPlaying] = useState<boolean>()
+export default function Home (props: TSession) {
+  const [queue, setQueue] = useState<TQueue[]>()
+  const [queueId, setQueueId] = useState<number>(props.queueId)
+  const [isPlaying, setPlaying] = useState<boolean>(props.isPlaying)
 
   const queueRef = createRef(queue)
 
-  const addQueue = async (payload: TSessionQueue) => {
+  const addQueue = async (payload: TQueue) => {
     setQueue([...queueRef.current, payload])
   }
 
@@ -57,19 +47,17 @@ export default function Home (props: Props) {
 
   useEffect(() => void (async () => {
     await ws.open()
-    const { queue, queueId, isPlaying } = await request<TSessionState>('getState')
+    const queue = await request<TQueue[]>('queue')
     setQueue(queue)
-    setQueueId(queueId)
-    setPlaying(isPlaying)
 
     ws.on('addQueue', addQueue)
       .on('delQueue', delQueue)
       .on('moveQueue', moveQueue)
-      .on('playId', setQueueId)
-      .on('play', setPlaying)
+      .on('play', setQueueId)
+      .on('toggle', setPlaying)
   })(), [])
 
-  return queue ? <>
+  return queue ?
     <BrowserRouter>
       <Navigation />
       <Route path='/qr'>
@@ -86,7 +74,6 @@ export default function Home (props: Props) {
           <Queue queueId={queueId} queue={queue} />
         </main>
       </Route>
-    </BrowserRouter>
-    </> :
+    </BrowserRouter> :
     <Loader />
 }

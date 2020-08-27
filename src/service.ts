@@ -7,8 +7,6 @@ import { AllHtmlEntities } from 'html-entities'
 import { fetch } from './fetch'
 import { Session, Video, Queue } from './models'
 import { IMiddleware, TCredentials, TAuthorizedMiddleware, YoutubeSearchResult, YoutubeVideoResult, TInvite } from '../typings/web'
-import { TQueue } from '../typings/models'
-
 
 const { HASH_KEY, YOUTUBE, HREF } = process.env
 
@@ -24,10 +22,6 @@ export const errorHandler: IMiddleware = async (ctx, next) => {
 
 export const responseHandler: IMiddleware = async (ctx, next) => {
   return next().then(() => ctx.body = { code: 200, data: ctx.state.data })
-}
-
-export const bodyParserError = () => {
-  throw new ApiError(400, 'Bad Request')
 }
 
 export const webSocketHandler: IMiddleware = async (ctx) => {
@@ -48,7 +42,9 @@ const wsEmit = <T>(sess: string, event: string, payload: T) => {
   wss.clients.forEach((ws) => wsCreds.get(ws)?.session === sess && ws.send(JSON.stringify({ event, payload })))
 }
 
-const hashPayload = <T>(obj: T) => Object.values(obj).reduce((a: Hmac, c) => a.update(`${c}`), createHmac('sha256', HASH_KEY || '')).digest('base64')
+const hashPayload = <T>(obj: T) => {
+  return Object.values(obj).reduce((a: Hmac, c) => a.update(`${c}`), createHmac('sha256', HASH_KEY || '')).digest('base64')
+}
 
 const sign = <T>(payload: T) => {
   const signed = Date.now()
@@ -82,7 +78,7 @@ export const authorize: IMiddleware = async (ctx, next) => {
 
 export const onStart: IMiddleware = async (ctx) => {
   const sess = await Session.create()
-  const payload = { session: sess.uuid, rank: 0 }
+  const payload = { session: sess.id, rank: 0 }
 
   ctx.state.data = sign(payload)
 }
@@ -94,7 +90,7 @@ export const onJoin: IMiddleware = async (ctx) => {
   const { session, signed } = await verify<TInvite>(decodeURIComponent(invite))
   if (Date.now() - signed > 864e5) throw new ApiError(410, 'Invitation has expired')
 
-  const sess = await Session.findOne({ where: { uuid: session } })
+  const sess = await Session.findByPk(session)
   if (!sess) throw new ApiError(404, 'Session not found')
 
   ctx.state.data = sign({ session, rank: 3 })
@@ -103,52 +99,40 @@ export const onJoin: IMiddleware = async (ctx) => {
 export const onGetSession: TAuthorizedMiddleware = async (ctx) => {
   const { session, rank } = ctx.state
 
-  const sess = await Session.findOne({ where: { uuid: session } })
+  const sess = await Session.findByPk(session)
   if (!sess) throw new ApiError(404, 'Session not found')
 
-  ctx.state.data = { session, rank }
-}
-
-export const onGetState: TAuthorizedMiddleware = async (ctx) => {
-  const { session } = ctx.state
-
-  const sess = await Session.findOne({ where: { uuid: session } })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  const videos = await sess.getVideos({ attributes: { exclude: ['id', 'createdAt'] }, joinTableAttributes: { exclude: ['sessionId'] }, order: Sequelize.literal('queue.position'), raw: true, nest: true })
-  const queue = videos.map((({ queue, ...rest }) => ({ ...rest, ...queue })))
-
-  const payload = { queue, queueId: sess.queueId, isPlaying: sess.isPlaying }
+  const payload = { rank, queueId: sess.queueId, isPlaying: sess.isPlaying }
 
   ctx.state.data = payload
 }
 
+export const onGetQueue: TAuthorizedMiddleware = async (ctx) => {
+  const { session } = ctx.state
+
+  const raw = await Queue.findAll({ where: { sessionId: session }, attributes: { exclude: ['sessionId'] }, include: { model: Video, attributes: { exclude: ['id', 'createdAt'] } }, order: ['position'], raw: true, nest: true })
+  const queue = raw.map(({ video, ...rest }) => ({ ...video, ...rest }))
+
+  ctx.state.data = queue
+}
+
 export const onAddQueue: TAuthorizedMiddleware = async (ctx) => {
   const { session } = ctx.state
-  const vid = ctx.query.id as string
+  const videoId = ctx.query.id as string
 
-  if (!vid) throw new ApiError(400, 'Bad id value')
+  if (!videoId) throw new ApiError(400, 'Bad id value')
 
-  const sess = await Session.findOne({ where: { uuid: session } })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  const video = await Video.findOne({ where: { id: vid } })
+  const video = await Video.findByPk(videoId)
   if (!video) throw new ApiError(404, 'Video not found')
 
-  const [q] = await Queue.bulkCreate([{ sessionId: sess.id, videoId: vid }])
+  const [q] = await Queue.bulkCreate([{ sessionId: session, videoId }])
 
-  const { id, position, createdAt, addedBy } = q.toJSON() as TQueue
-
+  const { id, position, createdAt, addedBy } = q
   const { title, channel, duration, uploaded } = video
-  const payload = { id, position, title, channel, duration, uploaded, createdAt, addedBy, videoId: vid }
+
+  const payload = { id, position, title, channel, duration, uploaded, createdAt, addedBy, videoId }
 
   wsEmit(session, 'addQueue', payload)
-
-  if (!sess.queueId) {
-    await sess.update({ queueId: id })
-    wsEmit(session, 'setQueueId', id)
-    wsEmit(session, 'setVideoId', vid)
-  }
 }
 
 export const onDelQueue: TAuthorizedMiddleware = async (ctx) => {
@@ -157,11 +141,7 @@ export const onDelQueue: TAuthorizedMiddleware = async (ctx) => {
 
   if (!id || !Number.isInteger(id)) throw new ApiError(400, 'Bad id value')
 
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  Queue.destroy({ where: { id, sessionId: sess.id } })
-
+  Queue.destroy({ where: { id, sessionId: session } })
   wsEmit(session, 'delQueue', id)
 }
 
@@ -171,12 +151,9 @@ export const onMoveQueue: TAuthorizedMiddleware = async (ctx) => {
   const pos = +ctx.query.pos
 
   if (!id || !Number.isInteger(id)) throw new ApiError(400, 'Bad id value')
-  if (!pos || !Number.isInteger(pos) || pos < 1 ) throw new ApiError(400, 'Bad position value')
+  if (!pos || !Number.isInteger(pos) || pos < 1) throw new ApiError(400, 'Bad position value')
 
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  const queue = await Queue.findOne({ where: { id, sessionId: sess.id } })
+  const queue = await Queue.findOne({ where: { id, sessionId: session } })
   if (!queue) throw new ApiError(404, 'Queue not found')
 
   if (pos === queue.position) return
@@ -184,7 +161,8 @@ export const onMoveQueue: TAuthorizedMiddleware = async (ctx) => {
   const sign = pos - queue.position < 0
   const between = sign ? [pos, queue.position] : [queue.position, pos]
   const position = Sequelize.literal(`position ${sign ? '+' : '-'} 1`)
-  await Queue.update({ position }, { where: { position: { [Op.between]: between }, sessionId: sess.id } })
+
+  await Queue.update({ position }, { where: { position: { [Op.between]: between }, sessionId: session } })
   queue.update({ position: pos })
 
   wsEmit(session, 'moveQueue', { id, pos })
@@ -232,78 +210,25 @@ export const onQr: TAuthorizedMiddleware = async (ctx) => {
   ctx.state.data = data
 }
 
-export const onPrev: TAuthorizedMiddleware = async (ctx) => {
-  const { session } = ctx.state
-
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'queueId'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  const queue = await Queue.findOne({ where: { id: sess.queueId , sessionId: sess.id } })
-  if (!queue) throw new ApiError(404, 'Queue not found')
-
-  const prev = (await Queue.findOne({ where: { sessionId: sess.id, position: { [Op.lt]: queue.position } }, order: [['position', 'desc']] })) ||
-                await Queue.findOne({ where: { sessionId: sess.id }, limit: 1, order: [['position', 'desc']] })
-
-  if (!prev) throw new ApiError(404, 'Queue is empty')
-
-  sess.update({ queueId: prev.id })
-  wsEmit(session, 'playId', prev.id)
-}
-
-
-export const onNext: TAuthorizedMiddleware = async (ctx) => {
-  const { session } = ctx.state
-
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'queueId'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  const queue = await Queue.findOne({ where: { id: sess.queueId , sessionId: sess.id } })
-  if (!queue) throw new ApiError(404, 'Queue not found')
-
-  const next = (await Queue.findOne({ where: { sessionId: sess.id, position: { [Op.gt]: queue.position } }, order: ['position'] })) ||
-                await Queue.findOne({ where: { sessionId: sess.id }, limit: 1, order: ['position'] })
-
-  if (!next) throw new ApiError(404, 'Queue is empty')
-
-  sess.update({ queueId: next.id })
-  wsEmit(session, 'playId', next.id)
-}
-
-export const onPlayId: TAuthorizedMiddleware = async (ctx) => {
+export const onPlay: TAuthorizedMiddleware = async (ctx) => {
   const id = +ctx.query.id
   const { session } = ctx.state
 
   if (!id || !Number.isInteger(id)) throw new ApiError(400, 'Bad id value')
 
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'queueId'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  const queue = await Queue.findOne({ where: { id , sessionId: sess.id } })
+  const queue = await Queue.findOne({ where: { id, sessionId: session } })
   if (!queue) throw new ApiError(404, 'Queue not found')
 
-  sess.update({ queueId: id })
-  wsEmit(session, 'playId', id)
-}
-
-export const onPlay: TAuthorizedMiddleware = async (ctx) => {
-  const isPlaying = ctx.query.q === '0' ? false : ctx.query.q === '1' ? true : null
-  const { session } = ctx.state
-
-  if (isPlaying === null) throw new ApiError(400, 'Bad state value')
-
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'queueId'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
-
-  sess.update({ isPlaying })
-  wsEmit(session, 'play', isPlaying)
+  Session.update({ queueId: id }, { where: { id: session } })
+  wsEmit(session, 'play', id)
 }
 
 export const onToggle: TAuthorizedMiddleware = async (ctx) => {
   const { session } = ctx.state
 
-  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'isPlaying'] })
-  if (!sess) throw new ApiError(404, 'Session not found')
+  const isPlaying = ctx.query.q === '0' ? false : ctx.query.q === '1' ? true : null
+  if (isPlaying === null) throw new ApiError(400, 'Bad state value')
 
-  sess.update({ isPlaying: !sess.isPlaying })
-  wsEmit(session, 'toggle', !sess.isPlaying)
+  Session.update({ isPlaying }, { where: { id: session } })
+  wsEmit(session, 'toggle', isPlaying)
 }

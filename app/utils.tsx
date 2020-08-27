@@ -1,10 +1,12 @@
+import { useRef } from 'react'
+
 const { protocol, hostname } = location
 
 export class ApiError extends Error {
   constructor (public code: number, message?: string) { super(message) }
 }
 
-export async function request <T>(method: string, init: RequestInit = {}) {
+export async function request <T> (method: string, init: RequestInit = {}) {
   const { headers, ...rest } = init
   const creds = localStorage.getItem('credentials')
 
@@ -46,7 +48,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve) => this.ws.onopen = () => resolve())
   }
 
-  on <T>(type: string, cb: (payload: T) => void) {
+  on <T> (type: string, cb: (payload: T) => void) {
     this.events[type] = this.events[type] ? [...this.events[type], cb] : [cb]
     return this
   }
@@ -69,4 +71,10 @@ export const inviteHandler = async () => {
 
   history.replaceState(null, null, ' ')
   await request<string>(`join?invite=${token}`).then(setCreds)
+}
+
+export const createRef = <T extends unknown> (obj: T) => {
+  const ref = useRef(obj)
+  ref.current = obj
+  return ref
 }

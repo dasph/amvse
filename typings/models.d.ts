@@ -4,7 +4,6 @@ export type TModel<T> = typeof Model & { new (values?: Record<string, unknown>, 
 
 export type TSession = Model & {
   readonly id: number;
-  readonly uuid: string;
   queueId: number | null;
   sequence: number;
   isPlaying: boolean;
@@ -23,8 +22,6 @@ export type TVideo = Model & {
   readonly uploaded: Date;
   readonly duration: number;
   readonly createdAt: Date;
-
-  readonly queue?: TQueue[];
 }
 
 export type TQueue = Model & {
@@ -34,4 +31,6 @@ export type TQueue = Model & {
   readonly position: number;
   readonly addedBy: string | null;
   readonly createdAt: Date;
+
+  readonly video: TVideo[];
 }

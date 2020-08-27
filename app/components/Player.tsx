@@ -1,7 +1,7 @@
-import React, { useState, lazy, useRef } from 'react'
-import { TSessionQueue } from '../typings'
-import { request, WebSocketClient } from '../utils'
+import React, { useState, useEffect, lazy } from 'react'
 import { YouTubePlayer } from 'youtube-player/dist/types'
+import { TQueue } from '../typings'
+import { request, createRef, WebSocketClient } from '../utils'
 
 import './styles/player.scss'
 
@@ -11,40 +11,47 @@ type Props = {
   ws: WebSocketClient;
   rank: number;
   queueId: number;
-  queue: TSessionQueue[];
+  queue: TQueue[];
   isPlaying: boolean;
 }
 
-const createRef = <T extends unknown>(obj: T) => {
-  const ref = useRef(obj)
-  ref.current = obj
-  return ref
-}
-
 export const Player = (props: Props) => {
+  const { ws, queue, queueId, isPlaying, rank } = props
+
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [thumb, setThumb] = useState<string>('maxresdefault')
   const playerRef = createRef(player)
 
-  const { videoId, title } = props.queue.find(({ id }) => id === props.queueId) || {}
+  const { videoId, title } = queue.find(({ id }) => id === queueId) || {}
 
-  if (props.rank === 0) {
-    props.ws.on('toggle', (state: boolean) => state ? playerRef.current.pauseVideo() : playerRef.current.playVideo())
+  const toggle = (state: boolean) => {
+    state ? playerRef.current.playVideo() : playerRef.current.pauseVideo()
   }
+
+  const prev = () => {
+    const i = queue.findIndex(({ id }) => id === queueId) - 1
+    request(`play?id=${i >= 0 ? queue[i].id : queue[queue.length - 1].id}`, { method: 'PATCH' })
+  }
+
+  const next = () => {
+    const i = queue.findIndex(({ id }) => id === queueId) + 1
+    request(`play?id=${i < queue.length ? queue[i].id : queue[0].id}`, { method: 'PATCH' })
+  }
+
+  useEffect(() => { rank === 0 && ws.on('toggle', toggle) }, [])
 
   return (
     <div className='player'>
       <span>PLAYER</span>
-      {props.rank === 0 ?
+      {rank === 0 ?
         <YouTube videoId={videoId || 'lep7-tH15MY'} containerClassName='youtube-player'
-          onReady={({ target }) => { setPlayer(target); if (props.isPlaying) target.playVideo() }}
-          onPlay={() => request('play?q=1') }
-          onPause={() => request('play?q=0') }
-          onEnd={() => request('next')}
+          onReady={({ target }) => { setPlayer(target); if (isPlaying) target.playVideo() }}
+          // onPlay={() => request('play?q=1') }
+          // onPause={() => request('play?q=0') }
+          onEnd={queue.length ? next : () => playerRef.current.playVideo()}
           opts={{
             host: 'https://www.youtube-nocookie.com',
-            playerVars: { hl: 'en', rel: 0, modestbranding: 1, origin: location.origin }
-            // playerVars: { hl: 'en', rel: 0, autoplay: 1, modestbranding: 1, ...!videoId && { loop: 1, controls: 0, mute: 1 } }
+            playerVars: { hl: 'en', rel: 0, autoplay: 1, modestbranding: 1, origin: location.origin, ...!videoId && { controls: 0 } }
           }}
         /> :
         <>
@@ -53,11 +60,12 @@ export const Player = (props: Props) => {
           </div>
           <span>{title}</span>
           <div className='controls'>
-            <img src={`images/icon-next.svg`} onClick={() => request('prev')} />
-            <img src={`images/icon-${props.isPlaying ? 'pause' : 'play'}.svg`} onClick={() => request('toggle')} />
-            <img src={`images/icon-next.svg`} onClick={() => request('next')} />
+            <img src={'images/icon-next.svg'} onClick={prev} />
+            <img src={`images/icon-${isPlaying ? 'pause' : 'play'}.svg`} onClick={() => request(`toggle?q=${+!isPlaying}`)} />
+            <img src={'images/icon-next.svg'} onClick={next} />
           </div>
-        </>}
+        </>
+      }
     </div>
   )
 }

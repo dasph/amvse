@@ -1,10 +1,11 @@
 import React from 'react'
 import { request, setCreds } from '../utils'
+import { TSession } from '../typings'
 
 import './styles/landing.scss'
 
 type Props = {
-  setSession: React.Dispatch<React.SetStateAction<string>>
+  setSession: React.Dispatch<React.SetStateAction<TSession>>
 }
 
 export default function Landing ({ setSession }: Props) {

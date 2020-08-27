@@ -5,7 +5,7 @@
   "main": "dist/amvse.js",
   "scripts": {
     "dev": "nodemon -r dotenv/config -w dist",
-    "postinstall": "webpack && tsc",
+    "postinstall": "webpack --mode=production && tsc",
     "tsc": "tsc",
     "wp": "webpack",
     "tsc:w": "tsc -w",

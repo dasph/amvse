@@ -118,7 +118,7 @@ export const onGetState: TAuthorizedMiddleware = async (ctx) => {
   const videos = await sess.getVideos({ attributes: { exclude: ['id', 'createdAt'] }, joinTableAttributes: { exclude: ['sessionId'] }, order: Sequelize.literal('queue.position'), raw: true, nest: true })
   const queue = videos.map((({ queue, ...rest }) => ({ ...rest, ...queue })))
 
-  const payload = { queue, queueId: sess.queueId }
+  const payload = { queue, queueId: sess.queueId, isPlaying: sess.isPlaying }
 
   ctx.state.data = payload
 }
@@ -232,6 +232,25 @@ export const onQr: TAuthorizedMiddleware = async (ctx) => {
   ctx.state.data = data
 }
 
+export const onPrev: TAuthorizedMiddleware = async (ctx) => {
+  const { session } = ctx.state
+
+  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'queueId'] })
+  if (!sess) throw new ApiError(404, 'Session not found')
+
+  const queue = await Queue.findOne({ where: { id: sess.queueId , sessionId: sess.id } })
+  if (!queue) throw new ApiError(404, 'Queue not found')
+
+  const prev = (await Queue.findOne({ where: { sessionId: sess.id, position: { [Op.lt]: queue.position } }, order: [['position', 'desc']] })) ||
+                await Queue.findOne({ where: { sessionId: sess.id }, limit: 1, order: [['position', 'desc']] })
+
+  if (!prev) throw new ApiError(404, 'Queue is empty')
+
+  sess.update({ queueId: prev.id })
+  wsEmit(session, 'playId', prev.id)
+}
+
+
 export const onNext: TAuthorizedMiddleware = async (ctx) => {
   const { session } = ctx.state
 
@@ -241,11 +260,13 @@ export const onNext: TAuthorizedMiddleware = async (ctx) => {
   const queue = await Queue.findOne({ where: { id: sess.queueId , sessionId: sess.id } })
   if (!queue) throw new ApiError(404, 'Queue not found')
 
-  const next = await Queue.findOne({ where: { sessionId: sess.id, position: { [Op.gt]: queue.position } }, order: ['position'] })
-  const id = next?.id || null
+  const next = (await Queue.findOne({ where: { sessionId: sess.id, position: { [Op.gt]: queue.position } }, order: ['position'] })) ||
+                await Queue.findOne({ where: { sessionId: sess.id }, limit: 1, order: ['position'] })
 
-  sess.update({ queueId: id })
-  wsEmit(session, 'playId', id)
+  if (!next) throw new ApiError(404, 'Queue is empty')
+
+  sess.update({ queueId: next.id })
+  wsEmit(session, 'playId', next.id)
 }
 
 export const onPlayId: TAuthorizedMiddleware = async (ctx) => {
@@ -262,4 +283,27 @@ export const onPlayId: TAuthorizedMiddleware = async (ctx) => {
 
   sess.update({ queueId: id })
   wsEmit(session, 'playId', id)
+}
+
+export const onPlay: TAuthorizedMiddleware = async (ctx) => {
+  const isPlaying = ctx.query.q === '0' ? false : ctx.query.q === '1' ? true : null
+  const { session } = ctx.state
+
+  if (isPlaying === null) throw new ApiError(400, 'Bad state value')
+
+  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'queueId'] })
+  if (!sess) throw new ApiError(404, 'Session not found')
+
+  sess.update({ isPlaying })
+  wsEmit(session, 'play', isPlaying)
+}
+
+export const onToggle: TAuthorizedMiddleware = async (ctx) => {
+  const { session } = ctx.state
+
+  const sess = await Session.findOne({ where: { uuid: session }, attributes: ['id', 'isPlaying'] })
+  if (!sess) throw new ApiError(404, 'Session not found')
+
+  sess.update({ isPlaying: !sess.isPlaying })
+  wsEmit(session, 'toggle', !sess.isPlaying)
 }

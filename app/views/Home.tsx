@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, lazy } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
 import { request, WebSocketClient } from '../utils'
 import { Qr } from './Qr'
 import { Logout } from '../components/Logout'
 import { Loader } from '../components/Loader'
+import { Player } from '../components/Player'
 import { Queue } from '../components/Queue'
 import { Navigation } from '../components/Navigation'
 
@@ -14,9 +15,6 @@ import './styles/home.scss'
 type Props = {
   rank: number;
 }
-
-const PlayerHost = lazy(() => import('../components/PlayerHost'))
-const Player = lazy(() => import('../components/Player'))
 
 const createRef = <T extends unknown>(obj: T) => {
   const ref = useRef(obj)
@@ -29,6 +27,7 @@ const ws = new WebSocketClient()
 export default function Home (props: Props) {
   const [queue, setQueue] = useState<TSessionQueue[]>()
   const [queueId, setQueueId] = useState<number>()
+  const [isPlaying, setPlaying] = useState<boolean>()
 
   const queueRef = createRef(queue)
 
@@ -56,18 +55,18 @@ export default function Home (props: Props) {
     setQueue(q)
   }
 
-
-
   useEffect(() => void (async () => {
     await ws.open()
-    const { queue, queueId } = await request<TSessionState>('getState')
+    const { queue, queueId, isPlaying } = await request<TSessionState>('getState')
     setQueue(queue)
     setQueueId(queueId)
+    setPlaying(isPlaying)
 
     ws.on('addQueue', addQueue)
       .on('delQueue', delQueue)
       .on('moveQueue', moveQueue)
       .on('playId', setQueueId)
+      .on('play', setPlaying)
   })(), [])
 
   return queue ? <>
@@ -83,7 +82,7 @@ export default function Home (props: Props) {
       </Route>
       <Route path='/'>
         <main className='home'>
-          {props.rank === 0 && <PlayerHost queueId={queueId} queue={queue} /> }
+          <Player ws={ws} rank={props.rank} queueId={queueId} queue={queue} isPlaying={isPlaying} />
           <Queue queueId={queueId} queue={queue} />
         </main>
       </Route>

@@ -3,5 +3,10 @@
   flex-grow: 1;
   flex-direction: column;
 
+  @media only screen and (min-width: 1024px) {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 3fr 2fr;
+  }
 
 }

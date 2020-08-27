@@ -18,5 +18,5 @@ export type TSessionQueue = {
 export type TSessionState = {
   queueId: number | null;
   queue: TSessionQueue[];
-  rank: number;
+  isPlaying: boolean;
 }

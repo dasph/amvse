@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy } from 'react'
+import React, { useState, useEffect, useRef, lazy } from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
 import { request, WebSocketClient } from '../utils'
 import { Qr } from './Qr'
@@ -7,20 +7,70 @@ import { Loader } from '../components/Loader'
 import { Queue } from '../components/Queue'
 import { Navigation } from '../components/Navigation'
 
-import { TSessionState } from '../typings'
+import { TSessionState, TSessionQueue } from '../typings'
 
 import './styles/home.scss'
 
+type Props = {
+  rank: number;
+}
+
+const PlayerHost = lazy(() => import('../components/PlayerHost'))
 const Player = lazy(() => import('../components/Player'))
+
+const createRef = <T extends unknown>(obj: T) => {
+  const ref = useRef(obj)
+  ref.current = obj
+  return ref
+}
 
 const ws = new WebSocketClient()
 
-export default function Home () {
-  const [state, setState] = useState<TSessionState>()
+export default function Home (props: Props) {
+  const [queue, setQueue] = useState<TSessionQueue[]>()
+  const [queueId, setQueueId] = useState<number>()
 
-  useEffect(() => void ws.open().then(() => request('getState').then(setState)), [])
+  const queueRef = createRef(queue)
 
-  return state ? <>
+  const addQueue = async (payload: TSessionQueue) => {
+    setQueue([...queueRef.current, payload])
+  }
+
+  const delQueue = (id: number) => {
+    setQueue(queueRef.current.filter((q) => id !== q.id))
+  }
+
+  const moveQueue = ({ id, pos }: { id: number, pos: number }) => {
+    const old = queueRef.current.find((q) => id === q.id)?.position
+
+    if (!old) return
+
+    const sign = pos - old < 0
+    const [from, to] = sign ? [pos, old] : [old, pos]
+
+    const q = queueRef.current
+      .map((q) => { if (q.position >= from && q.position <= to) q.position += sign ? 1 : -1; return q })
+      .map((q) => { if (q.id === id) q.position = pos; return q })
+      .sort(({ position: a }, { position: b }) => a - b)
+
+    setQueue(q)
+  }
+
+
+
+  useEffect(() => void (async () => {
+    await ws.open()
+    const { queue, queueId } = await request<TSessionState>('getState')
+    setQueue(queue)
+    setQueueId(queueId)
+
+    ws.on('addQueue', addQueue)
+      .on('delQueue', delQueue)
+      .on('moveQueue', moveQueue)
+      .on('playId', setQueueId)
+  })(), [])
+
+  return queue ? <>
     <BrowserRouter>
       <Navigation />
       <Route path='/qr'>
@@ -33,8 +83,8 @@ export default function Home () {
       </Route>
       <Route path='/'>
         <main className='home'>
-          {state.rank === 0 && <Player ws={ws} queue={state.queue} videoId={state.queue.find(({ id }) => id === state.queueId)?.videoId} /> }
-          <Queue ws={ws}  queueId={state.queueId} queue={state.queue} />
+          {props.rank === 0 && <PlayerHost queueId={queueId} queue={queue} /> }
+          <Queue queueId={queueId} queue={queue} />
         </main>
       </Route>
     </BrowserRouter>

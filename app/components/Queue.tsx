@@ -6,7 +6,6 @@ import { TSessionQueue } from '../typings'
 import './styles/queue.scss'
 
 type Props = {
-  ws: WebSocketClient;
   queue: TSessionQueue[];
   queueId: number;
 }
@@ -14,9 +13,7 @@ type Props = {
 const wait = (n: number) => new Promise((resolve) => setTimeout(resolve, n))
 const formatTime = (t: number) => [~~(t / 60), t % 60].map((n) => `${n}`.padStart(2, '0')).join(':')
 
-export const Queue = (props: Props) => {
-  const [queue, setQueue] = useState<TSessionQueue[]>(props.queue)
-  const [queueId, setQueueId] = useState<number>(props.queueId)
+export const Queue = ({ queue, queueId }: Props) => {
   const [search, setSearch] = useState<TSessionQueue[]>(null)
   const [container, setContainer] = useState<Element>(null)
   const [fetching, setFetching] = useState<boolean>(false)
@@ -31,36 +28,11 @@ export const Queue = (props: Props) => {
     list.current.scrollTop = val
   }
 
-  const delQueue = (id: number) => {
-    const q = queue.filter((v) => id !== v.id)
-    setQueue(q)
-  }
-
-  const moveQueue = ({ id, pos }: { id: number, pos: number }) => {
-    const old = queue.find((q) => id === q.id)?.position
-
-    if (!old) return
-
-    const sign = pos - old < 0
-    const [from, to] = sign ? [pos, old] : [old, pos]
-
-    const q = queue
-      .map((q) => { if (q.position >= from && q.position <= to) q.position += sign ? 1 : -1; return q })
-      .map((q) => { if (q.id === id) q.position = pos; return q })
-      .sort(({ position: a }, { position: b }) => a - b)
-
-    setQueue(q)
-  }
-
   const getQueue = async (query: string, page?: string) => {
     setFetching(true)
     const res = await request(`search?query=${query}${page ? `&page=${page}` : ''}`)
     setFetching(false)
     return res
-  }
-
-  const addQueue = async (payload: TSessionQueue) => {
-    setQueue([...queue, payload])
   }
 
   const onQuery = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,12 +56,6 @@ export const Queue = (props: Props) => {
       }).catch(() => void 0)
   }
 
-  props.ws
-    .on('addQueue', addQueue)
-    .on('delQueue', delQueue)
-    .on('moveQueue', moveQueue)
-    .on('setQueueId', setQueueId)
-
   return (
     <div className='queue'>
       <span>{search ? 'SEARCH' : 'QUEUE'}</span>
@@ -109,7 +75,10 @@ export const Queue = (props: Props) => {
             renderItem={({ value: { id, videoId, title, channel, duration }, props }) => (
               <div className={`queue-song`} {...props} key={id}>
                 {id === queueId && <div className='queue-playing' /> }
-                <img src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} loading='lazy' width='100px' height='56px' />
+                <img src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
+                  loading='lazy' width='100px' height='56px'
+                  onClick={() => request(`play?id=${id}`, { method: 'PATCH' }) }
+                />
                 <div className='queue-song-info' data-movable-handle>
                   <span>{title}</span>
                   <span>{channel}</span>

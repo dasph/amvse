@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, useRef } from 'react'
+import React, { useState, lazy, useRef } from 'react'
 import { TSessionQueue } from '../typings'
 import { request, WebSocketClient } from '../utils'
 import { YouTubePlayer } from 'youtube-player/dist/types'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { List } from 'react-movable'
-import { request, WebSocketClient } from '../utils'
+import { request } from '../utils'
 import { TSessionQueue } from '../typings'
 
 import './styles/queue.scss'

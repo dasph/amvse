@@ -1,8 +1,7 @@
 import send from 'koa-send'
 import Router from 'koa-router'
-import bodyParser from 'koa-bodyparser'
 
-import { webSocketHandler, errorHandler, bodyParserError, responseHandler, onStart, onJoin, authorize, onGetSession, onGetState, onSearch, onDelQueue, onMoveQueue, onAddQueue, onQr, onNext, onPlayId, onPrev, onPlay, onToggle } from './service'
+import { webSocketHandler, errorHandler, responseHandler, onStart, onJoin, authorize, onGetSession, onGetState, onSearch, onDelQueue, onMoveQueue, onAddQueue, onQr, onNext, onPlayId, onPrev, onPlay, onToggle } from './service'
 
 export const front = new Router()
   .get(['/qr'], (ctx) => send(ctx, 'public/index.html'))
@@ -12,7 +11,6 @@ export const ws = new Router()
 
 export const api = new Router()
   .use(errorHandler)
-  .use(bodyParser({ onerror: bodyParserError }))
   .use(responseHandler)
   .post('/start', onStart)
   .get('/join', onJoin)

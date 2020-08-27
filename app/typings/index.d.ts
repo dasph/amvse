@@ -1,3 +1,8 @@
+export type TSession = {
+  rank: number;
+  session: string;
+}
+
 export type TSessionQueue = {
   id: number;
   position: number;

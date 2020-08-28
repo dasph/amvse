@@ -38,15 +38,15 @@ export const webSocketHandler: IMiddleware = async (ctx) => {
   ctx.respond = false
 }
 
-const wsEmit = <T>(sess: string, event: string, payload: T) => {
+const wsEmit = <T> (sess: string, event: string, payload: T) => {
   wss.clients.forEach((ws) => wsCreds.get(ws)?.session === sess && ws.send(JSON.stringify({ event, payload })))
 }
 
-const hashPayload = <T>(obj: T) => {
+const hashPayload = <T> (obj: T) => {
   return Object.values(obj).reduce((a: Hmac, c) => a.update(`${c}`), createHmac('sha256', HASH_KEY || '')).digest('base64')
 }
 
-const sign = <T>(payload: T) => {
+const sign = <T> (payload: T) => {
   const signed = Date.now()
   const hash = hashPayload({ ...payload, signed })
   const str = JSON.stringify({ ...payload, signed, hash })
@@ -54,7 +54,7 @@ const sign = <T>(payload: T) => {
   return Buffer.from(str).toString('base64')
 }
 
-const verify = async <T>(token: string) => {
+const verify = async <T> (token: string) => {
   const str = Buffer.from(token, 'base64').toString()
   const { hash, ...payload } = JSON.parse(str) as T & { hash: string }
   const hmac = hashPayload(payload)

@@ -10,13 +10,13 @@ export const digest = (stream: IncomingMessage) => {
   })
 }
 
-export const serve = <T>(stream: IncomingMessage) => ({
+export const serve = <T> (stream: IncomingMessage) => ({
   get stream () { return stream },
   get buffer () { return digest(stream) },
   get body () { return digest(stream).then((b) => b.toString()) },
   get json () { return this.body.then<T>(JSON.parse) }
 })
 
-export const fetch = async <T>(options: string | RequestOptions) => {
+export const fetch = async <T> (options: string | RequestOptions) => {
   return new Promise<IncomingMessage>((resolve, reject) => request(options, resolve).on('error', reject).end()).then((s) => serve<T>(s))
 }

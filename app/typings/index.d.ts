@@ -15,3 +15,11 @@ export type TQueue = {
   uploaded: string;
   createdAt: string;
 }
+
+export type TQueueSearch = {
+  id: string;
+  title: string;
+  channel: string;
+  duration: number;
+  uploaded: string;
+}

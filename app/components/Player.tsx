@@ -51,7 +51,7 @@ export const Player = (props: Props) => {
           onEnd={queue.length ? next : () => playerRef.current.playVideo()}
           opts={{
             host: 'https://www.youtube-nocookie.com',
-            playerVars: { hl: 'en', rel: 0, autoplay: 0, modestbranding: 1, origin: location.origin, ...!videoId && { controls: 0 } }
+            playerVars: { hl: 'en', rel: 0, autoplay: 1, modestbranding: 1, origin: location.origin, ...!videoId && { controls: 0 } }
           }}
         /> :
         <>

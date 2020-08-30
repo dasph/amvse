@@ -14,7 +14,7 @@ export default function Landing ({ setSession }: Props) {
 
     await request<string>('start', { method: 'post' }).then(setCreds)
 
-    request('getSession').then(setSession)
+    request('session').then(setSession)
   }
 
   return (

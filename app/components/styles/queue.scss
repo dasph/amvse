@@ -13,28 +13,82 @@
     align-self: center;
   }
 
-  .fetch {
+  .add {
+    height: 40px;
     display: flex;
-    height: 2px;
-    width: 100%;
+    margin: 0 3px 5px 0;
+    padding: 0 5px 5px 5px;
+    position: relative;
 
-    &::before {
-      display: flex;
-      height: 2px;
-      width: 100%;
+    @media only screen and (max-width: 1024px) {
+      margin: 5px 3px;
+    }
+
+    &::after {
       content: '';
-      background-color: black;
-      animation: running-progress 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      position: absolute;
+      border-bottom: 1px solid black;
+      width: 0;
+      left: 50%;
+      bottom: 0;
+      transition: .2s ease-in-out;
+    }
 
-      @keyframes running-progress {
-        0% { margin-left: 0px; margin-right: 100%; }
-        50% { margin-left: 25%; margin-right: 0%; }
-        100% { margin-left: 100%; margin-right: 0; }
+    &:focus-within::after {
+      width: 100%;
+      left: 0;
+    }
+
+    &.fetching::after {
+      animation: fetching 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+      @keyframes fetching {
+        0% { left: 0; width: 0; }
+        50% { left: 25%; width: 75%; }
+        100% { left: 100%; width: 0; }
       }
     }
 
-    &.hidden {
-      visibility: hidden;
+    input {
+      font-weight: 400;
+      font-size: 1.3em;
+      line-height: normal;
+      background: transparent;
+      flex-grow: 1;
+      border: none;
+      outline: none;
+
+      &::placeholder {
+        font-weight: 300;
+        font-size: 1.1em;
+        color: #101010;
+      }
+
+      &:focus + img.search {
+        opacity: 0;
+      }
+    }
+
+    img {
+      width: 24px;
+      height: 24px;
+      align-self: center;
+
+      &.search {
+        width: 28px;
+        height: 28px;
+        transition: opacity .2s ease-in-out;
+        opacity: 1;
+      }
+
+      &.clear {
+        transition: transform .2s ease-in-out;
+        cursor: pointer;
+
+        &:hover {
+          transform: rotate(-90deg);
+        }
+      }
     }
   }
 
@@ -62,7 +116,7 @@
     text-align: center;
   }
 
-  .song {
+  .video {
     height: 66px;
     font-weight: 400;
     display: flex;
@@ -81,7 +135,7 @@
       }
     }
 
-    &:nth-child(even) {
+    &:nth-child(odd) {
       background: #dadada;
     }
 
@@ -101,7 +155,9 @@
     }
 
     &.search {
-      @media only screen and (max-width: 768px) {
+      cursor: pointer;
+
+      @media only screen and (min-width: 768px) {
         &:hover {
           font-weight: 300;
           cursor: pointer;
@@ -207,55 +263,6 @@
 
       span {
         font-size: 0.8em;
-      }
-    }
-  }
-
-  .add {
-    margin: 20px 10px;
-    height: 40px;
-    display: flex;
-    padding: 5px;
-    border: 1px solid black;
-
-    @media only screen and (min-width: 1024px) {
-      margin: 10px 0px;
-    }
-
-    input {
-      font-weight: 400;
-      font-size: 1.3em;
-      line-height: normal;
-      background: transparent;
-      flex-grow: 1;
-      border: none;
-      outline: none;
-
-      &:focus + .icon-search {
-        opacity: 0;
-      }
-    }
-
-    img {
-      width: 32px;
-      height: 32px;
-      align-self: center;
-      margin-right: 5px;
-      cursor: pointer;
-
-      &.icon-search {
-        content: url('../images/icon-search.svg');
-        transition: opacity .2s ease-in-out;
-        opacity: 1;
-      }
-
-      &.icon-clear {
-        content: url('../images/icon-clear.svg');
-        transition: transform .2s ease-in-out;
-
-        &:hover {
-          transform: rotate(-90deg);
-        }
       }
     }
   }

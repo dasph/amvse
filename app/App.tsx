@@ -11,7 +11,7 @@ export const App = () => {
 
   useEffect(() => void (async () => {
     await inviteHandler().catch(() => void 0)
-    request('getSession').then(setSession).catch(() => setSession(null))
+    request('session').then(setSession).catch(() => setSession(null))
   })(), [])
 
   return (

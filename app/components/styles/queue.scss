@@ -86,6 +86,7 @@
     }
 
     &.dragged {
+      font-size: 1.1em;
       background: white;
     }
 
@@ -100,11 +101,13 @@
     }
 
     &.search {
-      &:hover {
-        font-weight: 300;
-        cursor: pointer;
-        background: #101010;
-        color: white;
+      @media only screen and (max-width: 768px) {
+        &:hover {
+          font-weight: 300;
+          cursor: pointer;
+          background: #101010;
+          color: white;
+        }
       }
 
       .right span:last-of-type {
@@ -208,7 +211,7 @@
     }
   }
 
-  .queue-add {
+  .add {
     margin: 20px 10px;
     height: 40px;
     display: flex;

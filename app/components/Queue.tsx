@@ -39,9 +39,10 @@ export const Queue = ({ queue, queueId }: Props) => {
 
   const delQueue = (id: number) => {
     request(`queue?id=${id}`, { method: 'DELETE' })
+
     if (queueId === id && queue.length > 1) {
       const i = queue.findIndex(({ id }) => id === queueId) + 1
-      request(`play?id=${i < queue.length ? queue[i].id : queue[0].id}`, { method: 'PATCH' })
+      request(`queue?id=${i < queue.length ? queue[i].id : queue[0].id}`, { method: 'POST' })
     }
   }
 
@@ -81,7 +82,7 @@ export const Queue = ({ queue, queueId }: Props) => {
           renderList={({ children, props }) => <div className='list' {...props}>{children}</div>}
           renderItem={({ value: { id, videoId, title, channel, duration }, props, isDragged }) => (
             <div className={`song${isDragged ? ' dragged' : ''}${id === queueId ? ' invert' : ''}`} {...props} key={id}>
-              <div className='thumbnail' onClick={() => request(`play?id=${id}`, { method: 'PATCH' }) }>
+              <div className='thumbnail' onClick={() => request(`queue?id=${id}`, { method: 'POST' }) }>
                 <img src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} loading='lazy' width='100px' height='56px' />
                 <img src='images/icon-start.svg' width='40px' height='40px' />
               </div>
@@ -102,13 +103,13 @@ export const Queue = ({ queue, queueId }: Props) => {
         <div className='list'>
           <div className='empty'>
             <img src='images/icon-emptyqueue.svg' width='256x' height='256px' />
-            <span>it's lonely out here...</span>
+            <span>{`it's lonely out here...`}</span>
           </div>
         </div> :
         <div className='list'> {
           search.map(({ id, title, channel, duration, uploaded }) =>
             <div className={`song search${queue.find((q) => q.videoId === id) ? ' added' : ''}`} key={id} onClick={() => request(`queue?id=${id}`, { method: 'PUT' })}>
-              <div className='thumbnail' onClick={() => request(`play?id=${id}`, { method: 'PATCH' }) }>
+              <div className='thumbnail'>
                 <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} loading='lazy' width='100px' height='56px' />
                 <img src='images/icon-add.svg' width='40px' height='40px' />
               </div>
@@ -127,7 +128,7 @@ export const Queue = ({ queue, queueId }: Props) => {
 
       <div className={`fetch${fetching ? '' : ' hidden'}`} />
 
-      <div className='queue-add'>
+      <div className='add'>
         <input
           type='text' value={query} onChange={onQuery}
           placeholder='Search for Music' autoCapitalize='false' ref={input}

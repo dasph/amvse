@@ -17,7 +17,6 @@ const ws = new WebSocketClient()
 export default function Home (props: TSession) {
   const [queue, setQueue] = useState<TQueue[]>()
   const [queueId, setQueueId] = useState<number>(props.queueId)
-  const [isPlaying, setPlaying] = useState<boolean>(props.isPlaying)
 
   const queueRef = createRef(queue)
 
@@ -53,8 +52,7 @@ export default function Home (props: TSession) {
     ws.on('addQueue', addQueue)
       .on('delQueue', delQueue)
       .on('moveQueue', moveQueue)
-      .on('play', setQueueId)
-      .on('toggle', setPlaying)
+      .on('setQueueId', setQueueId)
   })(), [])
 
   return queue ?
@@ -70,7 +68,7 @@ export default function Home (props: TSession) {
       </Route>
       <Route path='/'>
         <main className='home'>
-          <Player ws={ws} rank={props.rank} queueId={queueId} queue={queue} isPlaying={isPlaying} />
+          <Player ws={ws} rank={props.rank} isPlaying={props.isPlaying} queueId={queueId} queue={queue} />
           <Queue queueId={queueId} queue={queue} />
         </main>
       </Route>

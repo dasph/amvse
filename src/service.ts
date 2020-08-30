@@ -96,7 +96,7 @@ export const onJoin: IMiddleware = async (ctx) => {
   ctx.state.data = sign({ session, rank: 3 })
 }
 
-export const onGetSession: TAuthorizedMiddleware = async (ctx) => {
+export const onSession: TAuthorizedMiddleware = async (ctx) => {
   const { session, rank } = ctx.state
 
   const sess = await Session.findByPk(session)
@@ -210,7 +210,7 @@ export const onQr: TAuthorizedMiddleware = async (ctx) => {
   ctx.state.data = data
 }
 
-export const onPlay: TAuthorizedMiddleware = async (ctx) => {
+export const onSetQueueId: TAuthorizedMiddleware = async (ctx) => {
   const id = +ctx.query.id
   const { session } = ctx.state
 
@@ -220,15 +220,16 @@ export const onPlay: TAuthorizedMiddleware = async (ctx) => {
   if (!queue) throw new ApiError(404, 'Queue not found')
 
   Session.update({ queueId: id }, { where: { id: session } })
-  wsEmit(session, 'play', id)
+  wsEmit(session, 'setQueueId', id)
 }
 
-export const onToggle: TAuthorizedMiddleware = async (ctx) => {
-  const { session } = ctx.state
+export const onPlayer: TAuthorizedMiddleware = async (ctx) => {
+  const { q, emit } = ctx.query
+  const { session, rank } = ctx.state
 
-  const isPlaying = ctx.query.q === '0' ? false : ctx.query.q === '1' ? true : null
+  const isPlaying = q === '0' ? false : q === '1' ? true : null
   if (isPlaying === null) throw new ApiError(400, 'Bad state value')
 
-  Session.update({ isPlaying }, { where: { id: session } })
-  wsEmit(session, 'toggle', isPlaying)
+  if (rank === 0) Session.update({ isPlaying }, { where: { id: session } })
+  if (emit === '') wsEmit(session, 'isPlaying', isPlaying)
 }

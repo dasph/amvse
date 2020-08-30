@@ -96,12 +96,12 @@ export const Queue = ({ queue, queueId }: Props) => {
           }}
           renderList={({ children, props }) => <div className='list' {...props}>{children}</div>}
           renderItem={({ value: { id, videoId, title, channel, duration }, props, isDragged }) => (
-            <div className={`video${isDragged ? ' dragged' : ''}${id === queueId ? ' invert' : ''}`} {...props} key={id} ref={id === queueId ? videoRef : null}>
+            <div className={`video${isDragged ? ' dragged' : ''}${id === queueId ? ' invert' : ''}`} {...props}>
               <div className='thumbnail' onClick={() => request(`queue?id=${id}`, { method: 'POST' }) }>
                 <img src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} loading='lazy' width='100px' height='56px' />
                 <img src='images/icon-start.svg' width='40px' height='40px' />
               </div>
-              <div className='info'>
+              <div className='info' ref={id === queueId ? videoRef : null}>
                 <span>{title}</span>
                 <span>{channel}</span>
               </div>

@@ -19,7 +19,7 @@ export default function Landing ({ setSession }: Props) {
 
   return (
     <main className='landing-page'>
-      <img src='images/landing-logo.svg' />
+      <img src='images/landing-logo.svg' width='256px' height='256px' />
       <a className='button' onClick={start}>s t a r t</a>
     </main>
   )

@@ -30,7 +30,9 @@ export const Player = (props: Props) => {
 
   const togglePlayer = (state: boolean) => {
     setPlaying(state)
-    if (rank === 0 && playerRef.current.getPlayerState() !== 3) state ? playerRef.current.playVideo() : playerRef.current.pauseVideo()
+    if (rank === 0 && playerRef.current.getPlayerState() !== 3) {
+      state ? playerRef.current.playVideo() : playerRef.current.pauseVideo()
+    }
   }
 
   const prev = () => {
@@ -43,8 +45,8 @@ export const Player = (props: Props) => {
     request(`queue?id=${i < queue.length ? queue[i].id : queue[0].id}`, { method: 'POST' })
   }
 
-  useEffect(() => { ws.on('isPlaying', togglePlayer) }, [])
   useEffect(() => { setThumb(0) }, [videoId])
+  useEffect(() => { ws.on('isPlaying', togglePlayer) }, [])
 
   return (
     <div className='player'>

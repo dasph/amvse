@@ -19,6 +19,7 @@ export default function Home (props: TSession) {
   const [queueId, setQueueId] = useState<number>(props.queueId)
 
   const queueRef = createRef(queue)
+  const queueIdRef = createRef(queueId)
 
   const addQueue = async (payload: TQueue) => {
     setQueue([...queueRef.current, payload])
@@ -44,6 +45,14 @@ export default function Home (props: TSession) {
     setQueue(q)
   }
 
+  const autoStart = () => {
+    const id = queueRef.current?.find(({ id }) => id === queueIdRef.current)?.videoId
+
+    if (!id && queueRef.current?.length) {
+      request(`queue?id=${queueRef.current[0].id}`, { method: 'POST' })
+    }
+  }
+
   useEffect(() => void (async () => {
     await ws.open()
     const queue = await request<TQueue[]>('queue')
@@ -54,6 +63,8 @@ export default function Home (props: TSession) {
       .on('moveQueue', moveQueue)
       .on('setQueueId', setQueueId)
   })(), [])
+
+  if (props.rank === 0) useEffect(autoStart, [queueRef.current])
 
   return queue ?
     <BrowserRouter>

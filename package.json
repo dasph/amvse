@@ -1,7 +1,7 @@
 {
   "name": "amvse",
   "version": "0.0.0",
-  "description": "Simple and amusing party app - queue youtube music videos with your friends",
+  "description": "Simple and incredibly amusing party app - queue youtube music videos with your friends",
   "main": "dist/amvse.js",
   "scripts": {
     "dev": "nodemon -r dotenv/config -w dist",

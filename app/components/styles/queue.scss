@@ -193,6 +193,8 @@
       margin: 0px 5px;
       align-self: normal;
       overflow: hidden;
+      line-height: 1.2;
+      font-size: 0.95em;
 
       span {
         text-overflow: ellipsis;
@@ -206,6 +208,7 @@
 
         &:last-of-type {
           font-size: .9em;
+          white-space: nowrap;
         }
       }
     }

@@ -5,9 +5,9 @@
   "main": "dist/amvse.js",
   "scripts": {
     "dev": "nodemon -r dotenv/config -w dist",
-    "postinstall": "webpack --mode=production && tsc",
+    "postinstall": "webpack --mode production && tsc",
     "tsc": "tsc",
-    "wp": "webpack",
+    "wp": "webpack --mode production",
     "tsc:w": "tsc -w",
     "wp:w": "webpack -w",
     "proxy": "node dist/proxy.js",

@@ -18,19 +18,17 @@ export type TInvite = {
 }
 
 type YoutubeSearchItem = {
-  id: {
-    videoId: string;
-  }
-  snippet: {
-    publishedAt: string;
-    title: string;
-    channelTitle: string;
-  }
+  id: string;
+  title: string;
+  uploadedAt: string;
+  views: string;
+  duration: string;
+  author: string;
 }
 
 export type YoutubeSearchResult = {
-  nextPageToken?: string;
-  items: YoutubeSearchItem[];
+  code: number;
+  data: YoutubeSearchItem[];
 }
 
 type YoutubeVideoItem = {

@@ -10,7 +10,7 @@ export type TQueue = {
   videoId: string;
   title: string;
   channel: string;
-  duration: number;
+  duration: string;
   addedBy: string;
   uploaded: string;
   createdAt: string;
@@ -20,6 +20,6 @@ export type TQueueSearch = {
   id: string;
   title: string;
   channel: string;
-  duration: number;
+  duration: string;
   uploaded: string;
 }

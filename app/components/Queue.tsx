@@ -11,7 +11,6 @@ type Props = {
 }
 
 const wait = (n: number) => new Promise((resolve) => setTimeout(resolve, n))
-const format = (t: number) => [~~(t / 60), t % 60].map((n) => `${n}`.padStart(2, '0')).join(':')
 
 export const Queue = ({ queue, queueId }: Props) => {
   const [search, setSearch] = useState<TQueueSearch[]>(null)
@@ -31,11 +30,11 @@ export const Queue = ({ queue, queueId }: Props) => {
     queueRef.current.scrollTop = val
   }
 
-  const getQueue = (query: string, page?: string) => {
+  const getQueue = (query: string, offset?: string | number) => {
     if (query.length < 3) return
 
     setFetching(true)
-    return request(`search?query=${query}${page ? `&page=${page}` : ''}`)
+    return request(`search?query=${query}${offset ? `&offset=${offset}` : ''}`)
   }
 
   const delQueue = (id: number) => {
@@ -110,7 +109,7 @@ export const Queue = ({ queue, queueId }: Props) => {
               </div>
               <div className='right'>
                 <img src='images/icon-remove.svg' width='24px' height='24px' onClick={() => delQueue(id)} />
-                <span>{format(duration)}</span>
+                <span>{duration}</span>
               </div>
             </div>
           )}
@@ -135,7 +134,7 @@ export const Queue = ({ queue, queueId }: Props) => {
                 <span>{channel}</span>
               </div>
               <div className='right'>
-                <span>{format(duration)}</span>
+                <span>{duration}</span>
                 <span>{new Date(uploaded).toLocaleDateString().replace(/\/(?=\d{3})/, '\n')}</span>
               </div>
             </div>

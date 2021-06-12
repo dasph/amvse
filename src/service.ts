@@ -1,14 +1,12 @@
 import WebSocket from 'ws'
 import { imageSync } from 'qr-image'
 import { Sequelize, Op } from 'sequelize'
-import ytDuration from 'iso8601-duration'
 import { createHmac, Hmac } from 'crypto'
-import { AllHtmlEntities } from 'html-entities'
 import { fetch } from './fetch'
 import { Session, Video, Queue } from './models'
 import { IMiddleware, TCredentials, TAuthorizedMiddleware, YoutubeSearchResult, YoutubeVideoResult, TInvite } from '../typings/web'
 
-const { HASH_KEY, YOUTUBE, HREF } = process.env
+const { HASH_KEY, HREF, proxyHost } = process.env
 
 export class ApiError extends Error { constructor (public code: number, message?: string) { super(message) } }
 
@@ -169,30 +167,18 @@ export const onMoveQueue: TAuthorizedMiddleware = async (ctx) => {
 }
 
 export const onSearch: TAuthorizedMiddleware = async (ctx) => {
-  const { query, page } = ctx.query
+  const { query, offset } = ctx.query
 
   if (!query || query.length < 3) throw new ApiError(400, 'Bad Request')
 
-  const res = await fetch<YoutubeSearchResult>({
-    hostname: 'www.googleapis.com',
-    path: `/youtube/v3/search?q=${encodeURIComponent(query)}&maxResults=50&type=video&part=snippet&fields=nextPageToken,items(id(videoId),snippet(publishedAt,title,channelTitle))${page ? `&pageToken=${page}` : ''}&key=${YOUTUBE}`
-  }).then(({ json }) => json)
+  const { data } = await fetch<YoutubeSearchResult>({ hostname: proxyHost, path: `/youtube?query=${encodeURIComponent(query)}&offset=${offset || 0}` }).then(({ json }) => json)
 
-  const ids = res.items.map(({ id: { videoId } }) => videoId).join(',')
-
-  const details = await fetch<YoutubeVideoResult>({
-    hostname: 'www.googleapis.com',
-    path: `/youtube/v3/videos?id=${ids}&part=contentDetails&fields=items(id,contentDetails(duration))&key=${YOUTUBE}`
-  }).then(({ json }) => json)
-
-  const durs = Object.fromEntries(details.items.map(({ id, contentDetails: { duration } }) => ([id, ytDuration.toSeconds(ytDuration.parse(duration))])))
-
-  const formated = res.items.map(({ id: { videoId }, snippet: { channelTitle, publishedAt, title } }) => ({
-    id: videoId,
-    channel: channelTitle.length > 64 ? `${channelTitle.slice(0, 61)}...` : channelTitle,
-    uploaded: publishedAt,
-    duration: durs[videoId],
-    title: AllHtmlEntities.decode(title.length > 64 ? `${title.slice(0, 61)}...` : title)
+  const formated = data.map(({ id, title, uploadedAt, views, author, duration }) => ({
+    id,
+    title,
+    duration,
+    uploaded: uploadedAt,
+    channel: author.length > 64 ? `${author.slice(0, 61)}...` : author
   }))
 
   Video.bulkCreate(formated, { ignoreDuplicates: true })

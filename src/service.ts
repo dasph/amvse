@@ -181,7 +181,7 @@ export const onSearch: TAuthorizedMiddleware = async (ctx) => {
       views,
       title: title.length > 64 ? `${title.slice(0, 61)}...` : title,
       duration: duration.split(':').reverse().reduce((a, c, i) => a + +c * 60 ** i, 0),
-      uploaded: Date.now() - (uploadedAt ? uploadedAt.indexOf('year') ? +ago * 3.1536e10 : uploadedAt.indexOf('month') ? +ago * 2.592e9 : uploadedAt.indexOf('week') ? +ago * 6.048e8 : uploadedAt.indexOf('day') ? +ago * 8.64e7 : 0 : 0),
+      uploaded: Date.now() - (uploadedAt ? uploadedAt.indexOf('year') !== -1 ? +ago * 3.1536e10 : uploadedAt.indexOf('month') !== -1 ? +ago * 2.592e9 : uploadedAt.indexOf('week') !== -1 ? +ago * 6.048e8 : uploadedAt.indexOf('day') !== -1 ? +ago * 8.64e7 : 0 : 0),
       channel: author.length > 64 ? `${author.slice(0, 61)}...` : author
     }
   })

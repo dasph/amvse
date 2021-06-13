@@ -174,7 +174,7 @@ export const onSearch: TAuthorizedMiddleware = async (ctx) => {
   const res = await fetch<YoutubeSearchResult>({ hostname: proxyHost, path: `/youtube?query=${encodeURIComponent(query)}&offset=${offset || 0}` }).then(({ json }) => json)
 
   const formated = res.data.map(({ id, title, uploadedAt, views, author, duration }) => {
-    const ago = uploadedAt?.split(' ')[0]
+    const ago = uploadedAt?.split(' ').map((n) => +n).find((n) => n)
 
     return {
       id,

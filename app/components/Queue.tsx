@@ -31,11 +31,11 @@ export const Queue = ({ queue, queueId }: Props) => {
     queueRef.current.scrollTop = val
   }
 
-  const getQueue = (query: string, page?: string) => {
+  const getQueue = (query: string, offset?: string | number) => {
     if (query.length < 3) return
 
     setFetching(true)
-    return request(`search?query=${query}${page ? `&page=${page}` : ''}`)
+    return request(`search?query=${query}${offset ? `&offset=${offset}` : ''}`)
   }
 
   const delQueue = (id: number) => {

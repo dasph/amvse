@@ -1,8 +1,8 @@
 {
   "name": "amvse",
-  "version": "0.0.0",
+  "private": true,
+  "version": "0.0.1",
   "description": "Simple and incredibly amusing party app - queue youtube music videos with your friends",
-  "main": "dist/amvse.js",
   "scripts": {
     "dev": "nodemon -r dotenv/config -w dist",
     "postinstall": "webpack --mode production && tsc",
@@ -13,23 +13,7 @@
     "proxy": "node dist/proxy.js",
     "lint": "eslint --ext .ts,.tsx ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/daspharion/amvse.git"
-  },
-  "keywords": [
-    "youtube",
-    "party",
-    "queue",
-    "music",
-    "playlist"
-  ],
-  "author": "daspharion",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/daspharion/amvse/issues"
-  },
-  "homepage": "https://github.com/daspharion/amvse#readme",
   "dependencies": {
     "@babel/core": "^7.11.1",
     "@babel/plugin-proposal-optional-chaining": "^7.11.0",
